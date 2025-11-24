@@ -100,6 +100,8 @@ Pod::Spec.new do |s|
     'Sources/Shared/**/*.{swift,h,m,c}',
   ]
 
+  s.exclude_files = "Sources/Shared/**/test_*.c"
+
   # C headers from WireGuardKitC
   s.public_header_files = [
     'Sources/WireGuardKitC/**/*.h',
@@ -156,6 +158,7 @@ Pod::Spec.new do |s|
   # Shared utilities subspec
   s.subspec 'Shared' do |shared|
     shared.source_files = 'Sources/Shared/**/*.{swift,h,m,c}'
+    shared.exclude_files = 'Sources/Shared/**/test_*.c'
   end
 
   # C interface subspec
