@@ -4,7 +4,7 @@
 import Foundation
 import os.log
 
-public class Logger {
+class Logger {
     enum LoggerError: Error {
         case openFailure
     }

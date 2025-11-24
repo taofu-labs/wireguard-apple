@@ -53,4 +53,5 @@ Sources/WireGuardApp/Config/Developer.xcconfig
 # WireGuardKit CocoaPods build artifacts
 .build/
 Artifacts/
+Libraries/
 *.xcframework

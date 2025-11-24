@@ -4,11 +4,11 @@ Pod::Spec.new do |s|
   # ============================================================================
 
   s.name                  = 'WireGuardKit'
-  s.version               = '0.0.2'
+  s.version               = '0.0.3'
   s.summary               = 'Production-ready WireGuard implementation for iOS'
   s.description           = <<-DESC
     WireGuardKit provides a complete WireGuard VPN implementation for iOS,
-    built from source and packaged as an XCFramework. Supports iOS 12.0+
+    built from source with vendored static libraries. Supports iOS 12.0+
     and works seamlessly in Network Extension/Packet Tunnel Provider contexts.
 
     Features:
@@ -16,6 +16,7 @@ Pod::Spec.new do |s|
     - Full support for iOS devices and simulators (Intel + Apple Silicon)
     - Application Extension API compatible
     - Zero pre-built binaries (builds from source during pod install)
+    - Swift extensions fully accessible in app extension targets (v0.0.3 fix)
   DESC
 
   s.homepage              = 'https://github.com/taofu-labs/wireguard-apple'
@@ -77,6 +78,21 @@ Pod::Spec.new do |s|
     echo "Phase 3/3: Verifying build..."
     ./Scripts/verify-build.sh
 
+    # Create library directories for CocoaPods
+    mkdir -p Libraries/ios-arm64
+    mkdir -p Libraries/ios-arm64_x86_64-simulator
+
+    # Copy built libraries to Libraries directory
+    if [ -f ".build/libraries/ios-device-arm64/libwg-go.a" ]; then
+      cp .build/libraries/ios-device-arm64/libwg-go.a Libraries/ios-arm64/
+      echo "✓ Copied arm64 library"
+    fi
+
+    if [ -f ".build/libraries/ios-simulator/libwg-go.a" ]; then
+      cp .build/libraries/ios-simulator/libwg-go.a Libraries/ios-arm64_x86_64-simulator/
+      echo "✓ Copied simulator library"
+    fi
+
     echo ""
     echo "========================================"
     echo "✓ WireGuardKit build completed!"
@@ -91,13 +107,11 @@ Pod::Spec.new do |s|
   # Source Files
   # ============================================================================
 
-  # XCFramework (built by prepare_command)
-  s.vendored_frameworks = 'Artifacts/WireGuardKit.xcframework'
-
-  # Swift sources from WireGuardKit
+  # All Swift and C sources compiled together in one module
   s.source_files = [
-    'Sources/WireGuardKit/**/*.swift',
+    'Sources/WireGuardKit/**/*.{swift,h,m}',
     'Sources/Shared/**/*.{swift,h,m,c}',
+    'Sources/WireGuardKitC/**/*.{h,c}'
   ]
 
   s.exclude_files = "Sources/Shared/**/test_*.c"
@@ -105,13 +119,15 @@ Pod::Spec.new do |s|
   # C headers from WireGuardKitC
   s.public_header_files = [
     'Sources/WireGuardKitC/**/*.h',
-    'Sources/WireGuardKitGo/wireguard.h'
+    'Sources/WireGuardKitGo/wireguard.h',
+    'Sources/Shared/Logging/ringlogger.h'
   ]
 
-  # Preserve build scripts and Go sources (needed for prepare_command)
+  # Preserve build scripts, Go sources, and libraries (needed for prepare_command)
   s.preserve_paths = [
     'Scripts/*',
-    'Sources/WireGuardKitGo/**/*'
+    'Sources/WireGuardKitGo/**/*',
+    'Libraries/**/*.a'
   ]
 
   # ============================================================================
@@ -134,6 +150,14 @@ Pod::Spec.new do |s|
       '$(PODS_TARGET_SRCROOT)/Sources/WireGuardKitGo'
     ].join(' '),
 
+    # Library search paths for vendored libraries
+    'LIBRARY_SEARCH_PATHS[sdk=iphoneos*]' => '$(PODS_TARGET_SRCROOT)/Libraries/ios-arm64',
+    'LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]' =>
+    '$(PODS_TARGET_SRCROOT)/Libraries/ios-arm64_x86_64-simulator',
+
+    # Link against WireGuard Go library
+    'OTHER_LDFLAGS' => '-lwg-go',
+
     # Disable bitcode (deprecated in Xcode 14+)
     'ENABLE_BITCODE' => 'NO',
   }
@@ -144,28 +168,6 @@ Pod::Spec.new do |s|
 
   s.module_name = 'WireGuardKit'
   s.requires_arc = true
-
-  # ============================================================================
-  # Subspecs (optional, for more granular control)
-  # ============================================================================
-
-  # Main subspec includes everything
-  s.subspec 'Core' do |core|
-    core.source_files = 'Sources/WireGuardKit/**/*.swift'
-    core.vendored_frameworks = 'Artifacts/WireGuardKit.xcframework'
-  end
-
-  # Shared utilities subspec
-  s.subspec 'Shared' do |shared|
-    shared.source_files = 'Sources/Shared/**/*.{swift,h,m,c}'
-    shared.exclude_files = 'Sources/Shared/**/test_*.c'
-  end
-
-  # C interface subspec
-  s.subspec 'C' do |c|
-    c.source_files = 'Sources/WireGuardKitC/**/*.{h,c}'
-    c.public_header_files = 'Sources/WireGuardKitC/**/*.h'
-  end
 
   # ============================================================================
   # Frameworks and Libraries

@@ -11,7 +11,7 @@ enum PacketTunnelProviderError: String, Error {
     case couldNotSetNetworkSettings
 }
 
-extension NETunnelProviderProtocol {
+public extension NETunnelProviderProtocol {
     convenience init?(tunnelConfiguration: TunnelConfiguration, previouslyFrom old: NEVPNProtocol? = nil) {
         self.init()
 
