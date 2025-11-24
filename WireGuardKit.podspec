@@ -102,7 +102,8 @@ Pod::Spec.new do |s|
 
   # C headers from WireGuardKitC
   s.public_header_files = [
-    'Sources/WireGuardKitC/**/*.h'
+    'Sources/WireGuardKitC/**/*.h',
+    'Sources/WireGuardKitGo/wireguard.h'
   ]
 
   # Preserve build scripts and Go sources (needed for prepare_command)
