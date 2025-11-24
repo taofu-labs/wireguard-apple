@@ -150,16 +150,14 @@ Pod::Spec.new do |s|
       '$(PODS_TARGET_SRCROOT)/Sources/WireGuardKitGo'
     ].join(' '),
 
-    # Library search paths for vendored libraries
-    'LIBRARY_SEARCH_PATHS[sdk=iphoneos*]' => '$(PODS_TARGET_SRCROOT)/Libraries/ios-arm64',
-    'LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]' =>
-    '$(PODS_TARGET_SRCROOT)/Libraries/ios-arm64_x86_64-simulator',
-
-    # Link against WireGuard Go library
-    'OTHER_LDFLAGS' => '-lwg-go',
-
     # Disable bitcode (deprecated in Xcode 14+)
     'ENABLE_BITCODE' => 'NO',
+  }
+
+  s.user_target_xcconfig = {
+    'LIBRARY_SEARCH_PATHS[sdk=iphoneos*]' => '$(PODS_ROOT)/WireGuardKit/Libraries/ios-arm64',
+    'LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]' =>
+    '$(PODS_ROOT)/WireGuardKit/Libraries/ios-arm64_x86_64-simulator',
   }
 
   # ============================================================================
@@ -179,6 +177,7 @@ Pod::Spec.new do |s|
     'NetworkExtension',
     'SystemConfiguration'
   ]
+  s.libraries = 'wg-go'
 
   # ============================================================================
   # Additional Configuration
