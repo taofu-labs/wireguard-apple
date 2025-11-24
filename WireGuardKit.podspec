@@ -4,7 +4,7 @@ Pod::Spec.new do |s|
   # ============================================================================
 
   s.name                  = 'WireGuardKit'
-  s.version               = '1.0.0'
+  s.version               = '0.0.2'
   s.summary               = 'Production-ready WireGuard implementation for iOS'
   s.description           = <<-DESC
     WireGuardKit provides a complete WireGuard VPN implementation for iOS,
@@ -130,9 +130,6 @@ Pod::Spec.new do |s|
       '$(PODS_TARGET_SRCROOT)/Sources/WireGuardKitC',
       '$(PODS_TARGET_SRCROOT)/Sources/WireGuardKitGo'
     ].join(' '),
-
-    # Other Swift flags
-    'OTHER_SWIFT_FLAGS' => '-import-objc-header',
 
     # Disable bitcode (deprecated in Xcode 14+)
     'ENABLE_BITCODE' => 'NO',
