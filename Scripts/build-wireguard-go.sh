@@ -324,7 +324,6 @@ main() {
     log_info "  Device (arm64):      ${LIBRARIES_DIR}/${TARGET_DEVICE_ARM64}/libwg-go.a"
     log_info "  Simulator (fat):     ${LIBRARIES_DIR}/${TARGET_SIMULATOR_FAT}/libwg-go.a"
     echo ""
-    log_info "Next step: Run Scripts/build-xcframework.sh"
 }
 
 # Run main function

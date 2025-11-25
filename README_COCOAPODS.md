@@ -82,21 +82,15 @@ pod install
 
 ### Build Output
 
-During `pod install`, you'll see three build phases:
+During `pod install`, you'll see:
 
 ```
-Phase 1/3: Building WireGuard Go libraries...
+Building WireGuard Go libraries...
   ✓ Built ios-device-arm64
   ✓ Built ios-simulator-x86_64
   ✓ Built ios-simulator-arm64
   ✓ Created simulator fat binary
-
-Phase 2/3: Creating XCFramework...
-  ✓ Framework created
-  ✓ XCFramework created successfully
-
-Phase 3/3: Verifying build...
-  ✓ All validations passed!
+  ✓ Copied libraries to Libraries/
 ```
 
 ## Usage
@@ -197,17 +191,15 @@ wireguard-apple/
 │
 ├── .build/                           # Intermediate build files (gitignored)
 │   ├── goroot/                       # Patched Go runtime for iOS
-│   ├── libraries/                    # Compiled static libraries
-│   │   ├── ios-device-arm64/
-│   │   ├── ios-simulator-x86_64/
-│   │   ├── ios-simulator-arm64/
-│   │   └── ios-simulator/            # Fat binary (x86_64 + arm64)
-│   └── frameworks/                   # Intermediate framework structures
+│   └── libraries/                    # Compiled static libraries
+│       ├── ios-device-arm64/
+│       ├── ios-simulator-x86_64/
+│       ├── ios-simulator-arm64/
+│       └── ios-simulator/            # Fat binary (x86_64 + arm64)
 │
-├── Artifacts/                        # Final build output (gitignored)
-│   └── WireGuardKit.xcframework/     # Distributable XCFramework
-│       ├── ios-arm64/                # Device framework
-│       └── ios-arm64_x86_64-simulator/ # Simulator framework
+├── Libraries/                        # CocoaPods library output (gitignored)
+│   ├── ios-arm64/                    # Device library
+│   └── ios-arm64_x86_64-simulator/   # Simulator library
 │
 ├── Sources/                          # Original WireGuard source code
 │   ├── WireGuardKit/                 # Swift implementation
@@ -227,7 +219,7 @@ pod install
 WireGuardKit.podspec prepare_command runs
     ↓
 ┌─────────────────────────────────────────┐
-│ Phase 1: build-wireguard-go.sh         │
+│ build-wireguard-go.sh                   │
 ├─────────────────────────────────────────┤
 │ 1. Check Go & Xcode prerequisites       │
 │ 2. Patch Go runtime for iOS             │
@@ -236,29 +228,12 @@ WireGuardKit.podspec prepare_command runs
 │    - ios-simulator-x86_64               │
 │    - ios-simulator-arm64                │
 │ 4. Create fat simulator binary          │
+│ 5. Copy libraries to Libraries/         │
 └─────────────────────────────────────────┘
     ↓
-┌─────────────────────────────────────────┐
-│ Phase 2: build-xcframework.sh          │
-├─────────────────────────────────────────┤
-│ 1. Create framework structures          │
-│ 2. Copy binaries and headers            │
-│ 3. Generate module maps                 │
-│ 4. Create Info.plist files              │
-│ 5. Run xcodebuild -create-xcframework   │
-└─────────────────────────────────────────┘
+✅ Static libraries ready in Libraries/
     ↓
-┌─────────────────────────────────────────┐
-│ Phase 3: verify-build.sh                │
-├─────────────────────────────────────────┤
-│ 1. Validate XCFramework structure       │
-│ 2. Check binary architectures           │
-│ 3. Verify WireGuard symbols             │
-│ 4. Validate headers and module maps     │
-│ 5. Generate size report                 │
-└─────────────────────────────────────────┘
-    ↓
-✅ XCFramework ready at Artifacts/WireGuardKit.xcframework
+CocoaPods compiles Swift sources and links against libwg-go.a
 ```
 
 ## Build Process
@@ -369,7 +344,7 @@ xcodebuild -showsdks
 **Solution:**
 This usually indicates a build failure. Clean and rebuild:
 ```bash
-rm -rf .build Artifacts
+rm -rf .build Libraries
 ./Scripts/build-wireguard-go.sh
 ```
 

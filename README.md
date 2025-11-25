@@ -34,49 +34,53 @@ $ open WireGuard.xcodeproj
 
 ## WireGuardKit integration
 
-1. Open your Xcode project and add the Swift package with the following URL:
-   
-   ```
-   https://git.zx2c4.com/wireguard-apple
-   ```
-   
-2. `WireGuardKit` links against `wireguard-go-bridge` library, but it cannot build it automatically
-   due to Swift package manager limitations. So it needs a little help from a developer. 
-   Please follow the instructions below to create a build target(s) for `wireguard-go-bridge`.
-   
-   - In Xcode, click File -> New -> Target. Switch to "Other" tab and choose "External Build 
-     System".
-   - Type in `WireGuardGoBridge<PLATFORM>` under the "Product name", replacing the `<PLATFORM>` 
-     placeholder with the name of the platform. For example, when targeting macOS use `macOS`, or 
-     when targeting iOS use `iOS`.
-     Make sure the build tool is set to: `/usr/bin/make` (default).
-   - In the appeared "Info" tab of a newly created target, type in the "Directory" path under 
-     the "External Build Tool Configuration":
-     
-     ```
-     ${BUILD_DIR%Build/*}SourcePackages/checkouts/wireguard-apple/Sources/WireGuardKitGo
-     ```
-     
-   - Switch to "Build Settings" and find `SDKROOT`.
-     Type in `macosx` if you target macOS, or type in `iphoneos` if you target iOS.
-   
-3. Go to Xcode project settings and locate your network extension target and switch to 
-   "Build Phases" tab.
-   
-   - Locate "Dependencies" section and hit "+" to add `WireGuardGoBridge<PLATFORM>` replacing 
-     the `<PLATFORM>` placeholder with the name of platform matching the network extension 
-     deployment target (i.e macOS or iOS).
-     
-   - Locate the "Link with binary libraries" section and hit "+" to add `WireGuardKit`.
-   
-4. In Xcode project settings, locate your main bundle app and switch to "Build Phases" tab. 
-   Locate the "Link with binary libraries" section and hit "+" to add `WireGuardKit`.
-   
-5. iOS only: Locate Bitcode settings under your application target, Build settings -> Enable Bitcode, 
-   change the corresponding value to "No".
-   
-Note that if you ship your app for both iOS and macOS, make sure to repeat the steps 2-4 twice, 
-once per platform.
+WireGuardKit is distributed via CocoaPods for easy integration into your iOS VPN application.
+
+### Installation
+
+Add WireGuardKit to your `Podfile`:
+
+```ruby
+# For local development
+pod 'WireGuardKit', :path => '../wireguard-apple'
+
+# Or from a Git repository
+pod 'WireGuardKit', :git => 'https://github.com/taofu-labs/wireguard-apple.git', :tag => '0.0.3'
+```
+
+Then install:
+
+```bash
+pod install
+```
+
+**Note:** First installation takes 60-90 seconds to build WireGuard from source. Requires Go 1.20+ installed.
+
+### Usage
+
+```swift
+import NetworkExtension
+import WireGuardKit
+
+class PacketTunnelProvider: NEPacketTunnelProvider {
+    private lazy var adapter: WireGuardAdapter = {
+        return WireGuardAdapter(with: self) { logLevel, message in
+            // Your logging
+        }
+    }()
+
+    override func startTunnel(options: [String : NSObject]?, completionHandler: @escaping (Error?) -> Void) {
+        let config = try! TunnelConfiguration(fromWgQuickConfig: configString, called: "MyVPN")
+        adapter.start(tunnelConfiguration: config, completionHandler: completionHandler)
+    }
+
+    override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
+        adapter.stop { _ in completionHandler() }
+    }
+}
+```
+
+See [README_COCOAPODS.md](README_COCOAPODS.md) for detailed integration guide.
 
 ## MIT License
 

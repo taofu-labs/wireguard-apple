@@ -37,7 +37,7 @@ Pod::Spec.new do |s|
   # ============================================================================
 
   # Prepare command runs before pod install
-  # This builds WireGuard from source and creates the XCFramework
+  # This builds WireGuard Go library from source
   s.prepare_command = <<-CMD
     set -e
 
@@ -63,20 +63,12 @@ Pod::Spec.new do |s|
     echo "✓ Xcode found: $(xcodebuild -version | head -n1)"
     echo ""
 
-    # Make scripts executable
-    chmod +x Scripts/*.sh
+    # Make build script executable
+    chmod +x Scripts/build-wireguard-go.sh Scripts/common.sh
 
-    # Run build phases
-    echo "Phase 1/3: Building WireGuard Go libraries..."
+    # Build Go static library
+    echo "Building WireGuard Go libraries..."
     ./Scripts/build-wireguard-go.sh
-
-    echo ""
-    echo "Phase 2/3: Creating XCFramework..."
-    ./Scripts/build-xcframework.sh
-
-    echo ""
-    echo "Phase 3/3: Verifying build..."
-    ./Scripts/verify-build.sh
 
     # Create library directories for CocoaPods
     mkdir -p Libraries/ios-arm64
@@ -97,9 +89,6 @@ Pod::Spec.new do |s|
     echo "========================================"
     echo "✓ WireGuardKit build completed!"
     echo "========================================"
-    echo ""
-    echo "Build time: Approximately 60-90 seconds"
-    echo "Note: This only runs once. Subsequent pod installs use cached build."
     echo ""
   CMD
 
@@ -155,9 +144,8 @@ Pod::Spec.new do |s|
   }
 
   s.user_target_xcconfig = {
-    'LIBRARY_SEARCH_PATHS[sdk=iphoneos*]' => '$(PODS_ROOT)/WireGuardKit/Libraries/ios-arm64',
-    'LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]' =>
-    '$(PODS_ROOT)/WireGuardKit/Libraries/ios-arm64_x86_64-simulator',
+    'LIBRARY_SEARCH_PATHS[sdk=iphoneos*]' => '$(inherited) $(PODS_ROOT)/WireGuardKit/Libraries/ios-arm64',
+    'LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]' => '$(inherited) $(PODS_ROOT)/WireGuardKit/Libraries/ios-arm64_x86_64-simulator',
   }
 
   # ============================================================================
