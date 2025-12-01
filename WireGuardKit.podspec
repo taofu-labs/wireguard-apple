@@ -22,7 +22,7 @@ Pod::Spec.new do |s|
   s.homepage              = 'https://github.com/taofu-labs/wireguard-apple'
   s.license               = { :type => 'MIT', :file => 'COPYING' }
   s.author                = { 'WireGuard' => 'team@wireguard.com' }
-  s.source                = { :git => 'https://github.com/WireGuard/wireguard-apple.git', :tag => s.version.to_s }
+  s.source                = { :git => 'https://github.com/taofu-labs/wireguard-apple.git', :tag => s.version.to_s }
 
   # ============================================================================
   # Platform Requirements
@@ -49,7 +49,7 @@ Pod::Spec.new do |s|
 
     # Check prerequisites
     if ! command -v go &> /dev/null; then
-      echo "❌ Error: Go is required but not installed"
+      echo "Error: Go is required but not installed"
       echo ""
       echo "Installation options:"
       echo "  Homebrew: brew install go"
@@ -87,7 +87,7 @@ Pod::Spec.new do |s|
 
     echo ""
     echo "========================================"
-    echo "✓ WireGuardKit build completed!"
+    echo "  WireGuardKit build completed!"
     echo "========================================"
     echo ""
   CMD
